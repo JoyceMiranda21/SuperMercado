@@ -203,7 +203,7 @@ void removerPro(){
 }
 
 void fecharPedido(){
-    if (numCarrinho == 0){
+    if (numCarrinho = 0){
         printf("Carrinho vazio.\n");
         return;
     }
