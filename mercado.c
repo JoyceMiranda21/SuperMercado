@@ -27,10 +27,10 @@ void comprarPro();
 void visualizarCarrinho();
 void fecharPedido();
 void removerPro();
-Produto* pegarProdutoPorCodigo(int codigo);
+Produto* pegarProPorCodigo(int codigo);
 int temNoCarrinho(int codigo);
 void infoPro(Produto* prod);
-int produtoJaCadastrado(char nome[]);
+int proJaCadastrado(char nome[]);
 
 int main() {
     menu();
@@ -79,7 +79,7 @@ void menu() {
     } while(opcao != 7);
 }
 
-int produtoJaCadastrado(char nome[]) {
+int proJaCadastrado(char nome[]) {
     for (int i = 0; i < numProdutos; i++) {
         if (strcmp(produtos[i].nome, nome) == 0) {
             return 1;
@@ -98,7 +98,7 @@ void cadastrarPro(){
     printf("Nome do produto: ");
     scanf("%s", novoPro.nome);
 
-    if (produtoJaCadastrado(novoPro.nome)){
+    if (proJaCadastrado(novoPro.nome)){
         printf("Produto com o nome '%s' ja cadastrado.\n", novoPro.nome);
         return;
     }
@@ -136,4 +136,86 @@ void comprarPro(){
     scanf("%d", &codigo);
     printf("Digite a quantidade: ");
     scanf("%d", &quantidade);
+
+    Produto* produto = pegarProPorCodigo(codigo);
+    if (!produto){
+        printf("Produto nao encontrado.\n");
+        return;
+    }
+
+    int indCar = temNoCarrinho(codigo);
+    if (indCar == -1){
+        carrinho[numCarrinho++] = (Carrinho){*produto, quantidade};
+    }else{
+        carrinho[indCar].quant += quantidade;
+    }
+    printf("Produto adicionado ao carrinho.\n");
+}
+
+int temNoCarrinho(int codigo){
+    for (int i = 0; i < numCarrinho; i++){
+        if (carrinho[i].pro.codigo == codigo) return i;
+    }
+    return -1;
+}
+
+Produto* pegarProPorCodigo(int codigo){
+    for (int i = 0; i < numProdutos; i++){
+        if (produtos[i].codigo == codigo) return &produtos[i];
+    }
+    return NULL;
+}
+
+void visualizarCarrinho(){
+    if (numCarrinho == 0){
+        printf("O carrinho esta vazio.\n");
+        return;
+    }
+    printf("\n----- Carrinho de compra -----\n");
+    for (int i = 0; i < numCarrinho; i++){
+        infoPro(&carrinho[i].pro);
+        printf("Quantidade: %d\n--------------------\n", carrinho[i].quant);
+    }
+}
+
+void removerPro(){
+    if (numCarrinho == 0){
+        printf("O carrinho esta vazio, nao ha nada para remover.\n");
+        return;
+    }
+
+    int codigo;
+    visualizarCarrinho();
+    printf("Digite o codigo do produto que deseja remover: ");
+    scanf("%d", &codigo);
+
+    for (int i = 0; i < numCarrinho; i++){
+        if (carrinho[i].pro.codigo == codigo){
+            for (int j = i; j < numCarrinho - 1; j++){
+                carrinho[j] = carrinho[j + 1];
+            }
+            numCarrinho--;
+            printf("Produto removido.\n");
+            return;
+        }
+    }
+    printf("Produto nao encontrado.\n");
+}
+
+void fecharPedido(){
+    if (numCarrinho == 0){
+        printf("Carrinho vazio.\n");
+        return;
+    }
+
+    float total = 0;
+    printf("\n ----- Fechamento de pedido -----\n");
+    for (int i = 0; i < numCarrinho; i++){
+        Produto* produto = &carrinho[i].pro;
+        printf("%s (x%d): RS%.2f\n", (*produto).nome, carrinho[i].quant, (*produto).preco * carrinho[i].quant);
+        total += (*produto).preco * carrinho[i].quant;
+    }
+    printf("Total do pedido: RS%.2f\n", total);
+    numCarrinho = 0;
+    printf("Pedido fechado com sucesso.\n");
 }
